@@ -68,12 +68,51 @@ router.get("/", async (req, res, next) => {
       }
 
       // set properties for notification count and latest message preview
-      let latestMessage = convoJSON.messages[convoJSON.messages.length-1];
+      const readMessagesSentByUser = convoJSON.messages.filter(
+        (message) => message.senderId === userId && message.readByRecipient
+      );
+      if (readMessagesSentByUser.length > 0) {
+        convoJSON.latestReadMessageId =
+          readMessagesSentByUser[readMessagesSentByUser.length - 1].id;
+      } else {
+        convoJSON.latestReadMessageId = null;
+      }
+
+      const unreadMessagesForUser = convoJSON.messages.filter(
+        (message) =>
+          message.senderId === convoJSON.otherUser.id &&
+          !message.readByRecipient
+      );
+      convoJSON.notificationCount = unreadMessagesForUser.length;
+
+      let latestMessage = convoJSON.messages[convoJSON.messages.length - 1];
       convoJSON.latestMessageText = latestMessage.text;
       conversations[i] = convoJSON;
     }
 
     res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/read", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const { conversationId } = req.body;
+
+    await Message.update(
+      { readByRecipient: true },
+      {
+        where: {
+          conversationId: conversationId,
+        },
+      }
+    );
+
+    res.json();
   } catch (error) {
     next(error);
   }

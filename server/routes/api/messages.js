@@ -43,4 +43,21 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/read", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const { messageId, user } = req.body;
+
+    let message = Message.findOne({ where: { id: messageId } });
+    message.readByRecipient = true;
+    message.save();
+
+    res.json({ message, user });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

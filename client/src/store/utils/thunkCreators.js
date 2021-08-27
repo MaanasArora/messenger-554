@@ -5,6 +5,8 @@ import {
   addConversation,
   setNewMessage,
   setSearchedUsers,
+  clearNotificationCount,
+  decrementNotificationCount,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 
@@ -83,11 +85,29 @@ const saveMessage = async (body) => {
   return data;
 };
 
+const saveMessageRead = async (body) => {
+  const { data } = await axios.patch("/api/messages/read", body);
+  return data;
+};
+
+const saveConversationRead = async (body) => {
+  const { data } = await axios.patch("/api/conversations/read", body);
+  return data;
+};
+
 const sendMessage = (data, body) => {
   socket.emit("new-message", {
     message: data.message,
     recipientId: body.recipientId,
     sender: data.sender,
+  });
+};
+
+const sendConversationRead = (body) => {
+  socket.emit("convo-read", {
+    recipientId: body.otherUserId,
+    id: body.conversationId,
+    messageId: body.messageId,
   });
 };
 
@@ -104,6 +124,29 @@ export const postMessage = (body) => async (dispatch) => {
     }
 
     sendMessage(data, body);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const readMessage = (body) => async (dispatch) => {
+  try {
+    const data = await saveMessageRead(body);
+
+    dispatch(decrementNotificationCount(data.message.otherUser.id));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const readConversation = (body) => async (dispatch) => {
+  try {
+    if (body.conversationId) {
+      await saveConversationRead(body);
+
+      dispatch(clearNotificationCount(body.otherUserId));
+      sendConversationRead(body.conversationId);
+    }
   } catch (error) {
     console.error(error);
   }
