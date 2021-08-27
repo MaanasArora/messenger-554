@@ -47,6 +47,12 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("convo-read", (data) => {
+    socket.broadcast.emit("read-convo", {
+      id: data.id,
+    });
+  });
+
   socket.on("logout", (id) => {
     if (onlineUsers.includes(id)) {
       userIndex = onlineUsers.indexOf(id);

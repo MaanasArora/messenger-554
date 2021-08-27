@@ -32,8 +32,10 @@ const Chat = (props) => {
   const { otherUser } = conversation;
 
   const handleClick = async (conversation) => {
-    await props.setActiveChat(conversation.otherUser.username);
-    await props.readConversation(conversation.otherUser.id, conversation.id);
+    await props.setActiveChat(conversation.otherUser.id);
+    await props.readConversation(
+      conversation.otherUser.id, conversation.id, -1
+    );
   };
 
   return (
@@ -59,10 +61,11 @@ const mapDispatchToProps = (dispatch) => {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
     },
-    readConversation: (otherUserId, conversationId) => {
+    readConversation: (otherUserId, conversationId, messageId) => {
       const reqBody = {
         otherUserId: otherUserId,
         conversationId: conversationId,
+        messageId: messageId,
       };
       dispatch(readConversation(reqBody));
     },

@@ -7,6 +7,7 @@ import {
   incrementNotificationCountInStore,
   decrementNotificationCountInStore,
   clearNotificationCountInStore,
+  setLatestReadMessageInStore,
 } from "./utils/reducerFunctions";
 
 // ACTIONS
@@ -21,6 +22,7 @@ const ADD_CONVERSATION = "ADD_CONVERSATION";
 const INCREMENT_NOTIFICATION_COUNT = "INCREMENT_NOTIFICATION_COUNT";
 const DECREMENT_NOTIFICATION_COUNT = "DECREMENT_NOTIFICATION_COUNT";
 const CLEAR_NOTIFICATION_COUNT = "CLEAR_NOTIFICATION_COUNT";
+const SET_READ_MESSAGE = "SET_READ_MESSAGE";
 
 // ACTION CREATORS
 
@@ -94,6 +96,13 @@ export const clearNotificationCount = (otherUserId) => {
   };
 };
 
+export const setReadMessage = (conversationId, messageId) => {
+  return {
+    type: SET_READ_MESSAGE,
+    payload: { conversationId, messageId },
+  };
+};
+
 // REDUCER
 
 const reducer = (state = [], action) => {
@@ -124,6 +133,8 @@ const reducer = (state = [], action) => {
       return decrementNotificationCountInStore(state, action.otherUserId);
     case CLEAR_NOTIFICATION_COUNT:
       return clearNotificationCountInStore(state, action.otherUserId);
+    case SET_READ_MESSAGE:
+      return setLatestReadMessageInStore(state, action.payload);
     default:
       return state;
   }

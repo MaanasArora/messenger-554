@@ -5,8 +5,9 @@ import {
   removeOfflineUser,
   addOnlineUser,
   incrementNotificationCount,
+  setReadMessage,
 } from "./store/conversations";
-import { readMessage } from "./store/utils/thunkCreators";
+import { readConversation } from "./store/utils/thunkCreators";
 
 const socket = io(window.location.origin);
 
@@ -21,13 +22,20 @@ socket.on("connect", () => {
     store.dispatch(removeOfflineUser(id));
   });
   socket.on("new-message", (data) => {
-    if (store.getState().activeConversation !== data.sender.username) {
-      store.dispatch(incrementNotificationCount(data.sender.id));
+    if (store.getState().activeConversation !== data.message.senderId) {
+      store.dispatch(incrementNotificationCount(data.message.senderId));
     } else {
-      const reqBody = { messageId: data.message.messageId };
-      store.dispatch(readMessage(reqBody));
+      const reqBody = {
+        otherUserId: data.message.senderId,
+        conversationId: data.message.conversationId,
+        messageId: data.message.id,
+      };
+      store.dispatch(readConversation(reqBody));
     }
     store.dispatch(setNewMessage(data.message, data.sender));
+  });
+  socket.on("convo-read", (data) => {
+    store.dispatch(setReadMessage(data.conversationId, data.messageId))
   });
 });
 

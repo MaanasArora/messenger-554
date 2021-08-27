@@ -103,6 +103,14 @@ const sendMessage = (data, body) => {
   });
 };
 
+const sendConversationRead = (body) => {
+  socket.emit("convo-read", {
+    recipientId: body.otherUserId,
+    id: body.conversationId,
+    messageId: body.messageId,
+  });
+};
+
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
 export const postMessage = (body) => async (dispatch) => {
@@ -134,9 +142,10 @@ export const readMessage = (body) => async (dispatch) => {
 export const readConversation = (body) => async (dispatch) => {
   try {
     if (body.conversationId) {
-      const data = await saveConversationRead(body);
+      await saveConversationRead(body);
 
       dispatch(clearNotificationCount(body.otherUserId));
+      sendConversationRead(body.conversationId);
     }
   } catch (error) {
     console.error(error);

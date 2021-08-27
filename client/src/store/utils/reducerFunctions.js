@@ -60,6 +60,24 @@ export const clearNotificationCountInStore = (state, id) => {
   });
 };
 
+export const setLatestReadMessageInStore = (state, convoId, id) => {
+  return state.map((convo) => {
+    if (convo.id === convoId) {
+      const convoCopy = { ...convo };
+      // if message id is -1, set to latest message
+      convoCopy.latestReadMessageId =
+        id === -1
+          ? convo.messages.length > 0
+            ? convo.messages[convo.messages.length - 1].id
+            : null
+          : id;
+      return convoCopy;
+    } else {
+      return convo;
+    }
+  });
+};
+
 export const addOnlineUserToStore = (state, id) => {
   return state.map((convo) => {
     if (convo.otherUser.id === id) {
