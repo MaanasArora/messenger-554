@@ -4,7 +4,9 @@ import {
   setNewMessage,
   removeOfflineUser,
   addOnlineUser,
+  incrementNotificationCount,
 } from "./store/conversations";
+import { readMessage } from "./store/utils/thunkCreators";
 
 const socket = io(window.location.origin);
 
@@ -19,6 +21,12 @@ socket.on("connect", () => {
     store.dispatch(removeOfflineUser(id));
   });
   socket.on("new-message", (data) => {
+    if (store.getState().activeConversation !== data.sender.username) {
+      store.dispatch(incrementNotificationCount(data.sender.id));
+    } else {
+      const reqBody = { messageId: data.message.messageId };
+      store.dispatch(readMessage(reqBody));
+    }
     store.dispatch(setNewMessage(data.message, data.sender));
   });
 });

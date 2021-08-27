@@ -6,6 +6,7 @@ export const addMessageToStore = (state, payload) => {
       id: message.conversationId,
       otherUser: sender,
       messages: [message],
+      notificationCount: 0,
     };
     newConvo.latestMessageText = message.text;
     return [newConvo, ...state];
@@ -16,6 +17,42 @@ export const addMessageToStore = (state, payload) => {
       const convoCopy = { ...convo };
       convoCopy.messages.push(message);
       convoCopy.latestMessageText = message.text;
+      return convoCopy;
+    } else {
+      return convo;
+    }
+  });
+};
+
+export const incrementNotificationCountInStore = (state, id) => {
+  return state.map((convo) => {
+    if (convo.otherUser.id === id) {
+      const convoCopy = { ...convo };
+      convoCopy.notificationCount += 1;
+      return convoCopy;
+    } else {
+      return convo;
+    }
+  });
+};
+
+export const decrementNotificationCountInStore = (state, id) => {
+  return state.map((convo) => {
+    if (convo.otherUser.id === id) {
+      const convoCopy = { ...convo };
+      convoCopy.notificationCount -= 1;
+      return convoCopy;
+    } else {
+      return convo;
+    }
+  });
+};
+
+export const clearNotificationCountInStore = (state, id) => {
+  return state.map((convo) => {
+    if (convo.otherUser.id === id) {
+      const convoCopy = { ...convo };
+      convoCopy.notificationCount = 0;
       return convoCopy;
     } else {
       return convo;

@@ -5,6 +5,8 @@ import {
   addConversation,
   setNewMessage,
   setSearchedUsers,
+  clearNotificationCount,
+  decrementNotificationCount,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 
@@ -83,6 +85,16 @@ const saveMessage = async (body) => {
   return data;
 };
 
+const saveMessageRead = async (body) => {
+  const { data } = await axios.patch("/api/messages/read", body);
+  return data;
+};
+
+const saveConversationRead = async (body) => {
+  const { data } = await axios.patch("/api/conversations/read", body);
+  return data;
+};
+
 const sendMessage = (data, body) => {
   socket.emit("new-message", {
     message: data.message,
@@ -104,6 +116,28 @@ export const postMessage = (body) => async (dispatch) => {
     }
 
     sendMessage(data, body);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const readMessage = (body) => async (dispatch) => {
+  try {
+    const data = await saveMessageRead(body);
+
+    dispatch(decrementNotificationCount(data.message.otherUser.id));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const readConversation = (body) => async (dispatch) => {
+  try {
+    if (body.conversationId) {
+      const data = await saveConversationRead(body);
+
+      dispatch(clearNotificationCount(body.otherUserId));
+    }
   } catch (error) {
     console.error(error);
   }
